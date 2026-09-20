@@ -27,7 +27,6 @@ body {
   -webkit-text-size-adjust: 100%;
 }
 
-/* ============ Vorhänge: Start und Ergebnis ============ */
 
 .vorhang {
   position: fixed;
@@ -130,7 +129,6 @@ h1 {
 
 .text-knopf:hover { color: var(--papier); border-color: var(--papier); }
 
-/* Bestenliste */
 
 .bestenliste {
   margin-top: 46px;
@@ -171,7 +169,6 @@ h1 {
   min-width: 52px;
 }
 
-/* Ergebnis */
 
 .ende-zeile {
   margin: 0 0 4px;
@@ -212,7 +209,6 @@ h1 {
 
 .fehlerliste b { color: var(--papier); font-weight: 600; }
 
-/* ============ Spiel ============ */
 
 .spiel[hidden] { display: none; }
 
@@ -251,7 +247,6 @@ h1 {
   align-items: start;
 }
 
-/* ---------- Gitter ---------- */
 
 .gitter-huelle { max-width: 640px; margin: 0 auto; }
 
@@ -300,8 +295,6 @@ h1 {
   pointer-events: none;
 }
 
-/* --- Die sechs Zustände ---
-   Jeder ist auch ohne Farbe erkennbar: über Fläche, Ring, Strich oder Ecke. */
 
 .zelle.gefuellt .zellbuchstabe { color: var(--papier); }
 
@@ -313,7 +306,6 @@ h1 {
   z-index: 2;
 }
 
-/* falsch: Farbe UND diagonaler Strich */
 .zelle.falsch .zellbuchstabe { color: var(--rost); }
 .zelle.falsch::after {
   content: "";
@@ -325,7 +317,6 @@ h1 {
   pointer-events: none;
 }
 
-/* gelöst: Farbe, kräftigerer Schnitt UND ein Eckquadrat */
 .zelle.geloest .zellbuchstabe { color: var(--salbei); font-weight: 600; }
 .zelle.geloest::before {
   content: "";
@@ -338,7 +329,6 @@ h1 {
   pointer-events: none;
 }
 
-/* Verstecktes Eingabefeld für die Bildschirmtastatur */
 #tastaturfang {
   position: absolute;
   opacity: 0;
@@ -349,7 +339,6 @@ h1 {
   pointer-events: none;
 }
 
-/* ---------- Aktiver Hinweis unter dem Gitter ---------- */
 
 .aktiv-leiste {
   margin: 20px auto 0;
@@ -390,7 +379,6 @@ h1 {
 .werkzeuge button:hover:not(:disabled) { border-color: var(--messing); color: var(--messing); }
 .werkzeuge button:disabled { opacity: 0.4; cursor: default; }
 
-/* ---------- Hinweislisten ---------- */
 
 .hinweis-spalte section { margin-bottom: 28px; }
 
@@ -445,7 +433,6 @@ h1 {
   letter-spacing: 1px;
 }
 
-/* ============ Kleine Bildschirme ============ */
 
 @media (max-width: 860px) {
   .buehne {
@@ -457,7 +444,6 @@ h1 {
   h1 { font-size: 46px; }
   body { font-size: 16px; }
 
-  /* Der aktive Hinweis bleibt beim Tippen sichtbar */
   .aktiv-leiste {
     position: sticky;
     bottom: 0;
@@ -468,7 +454,6 @@ h1 {
   }
 }
 
-/* ============ Zugänglichkeit ============ */
 
 :focus-visible {
   outline: 2px solid var(--messing);
@@ -479,7 +464,6 @@ h1 {
   * { transition: none !important; animation: none !important; }
 }
 
-/* ============ Ladezustand und Quellenangabe ============ */
 
 .ladezustand {
   margin: 14px 0 0;

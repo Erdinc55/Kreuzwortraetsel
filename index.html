@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesesaal — Kreuzworträtsel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ Startbildschirm ============ -->
+<div class="vorhang" id="start">
+  <div class="vorhang-inhalt">
+    <h1>Lesesaal</h1>
+    <p class="anriss">
+      Ein Kreuzworträtsel über Allgemeinwissen. Jeder Hinweis lässt sich
+      zweimal nachschärfen — das kostet Punkte.
+    </p>
+
+    <div class="wahl">
+      <p class="wahl-frage" id="frage-gebiet">Gebiet</p>
+      <div class="knopfreihe" role="radiogroup" aria-labelledby="frage-gebiet">
+        <button type="button" data-gebiet="gemischt" aria-checked="true" role="radio">Gemischt</button>
+        <button type="button" data-gebiet="geografie" aria-checked="false" role="radio">Geografie</button>
+        <button type="button" data-gebiet="natur" aria-checked="false" role="radio">Natur</button>
+        <button type="button" data-gebiet="geschichte" aria-checked="false" role="radio">Geschichte</button>
+        <button type="button" data-gebiet="kultur" aria-checked="false" role="radio">Kultur</button>
+      </div>
+    </div>
+
+    <div class="wahl">
+      <p class="wahl-frage" id="frage-stufe">Schwierigkeit</p>
+      <div class="knopfreihe" role="radiogroup" aria-labelledby="frage-stufe">
+        <button type="button" data-stufe="leicht" aria-checked="false" role="radio">Leicht</button>
+        <button type="button" data-stufe="mittel" aria-checked="true" role="radio">Mittel</button>
+        <button type="button" data-stufe="schwer" aria-checked="false" role="radio">Schwer</button>
+      </div>
+      <p class="wahl-notiz" id="stufen-notiz">Die erste Hinweisstufe ist gratis.</p>
+    </div>
+
+    <button type="button" class="haupt-knopf" id="starten">Rätsel beginnen</button>
+
+    <p class="ladezustand" id="ladezustand" hidden></p>
+    <p class="quellenhinweis" id="quellenhinweis" hidden></p>
+
+    <section class="bestenliste" id="bestenliste-start" hidden>
+      <h2>Bisherige Rätsel</h2>
+      <ol id="bestenliste-liste"></ol>
+      <button type="button" class="text-knopf" id="liste-leeren">Liste leeren</button>
+    </section>
+
+    <p class="fussnote">
+      Die Fragen entstehen aus Wikidata (CC0). Sie werden einmal geladen und
+      im Browser behalten, damit die Seite auch ohne Verbindung spielbar bleibt.
+      <button type="button" class="text-knopf" id="vorrat-erneuern">Fragen neu laden</button>
+    </p>
+  </div>
+</div>
+
+<!-- ============ Spiel ============ -->
+<main class="spiel" id="spiel" hidden>
+
+  <header class="leiste">
+    <div class="leiste-links">
+      <span id="leiste-gebiet">Gemischt</span>
+      <span class="trenner" aria-hidden="true"></span>
+      <span id="leiste-stufe">Mittel</span>
+    </div>
+    <div class="leiste-rechts">
+      <span id="fortschritt">0 von 0</span>
+      <button type="button" class="text-knopf" id="aufgeben">Aufgeben</button>
+    </div>
+  </header>
+
+  <div class="buehne">
+
+    <!-- Gitter -->
+    <div class="gitter-spalte">
+      <div class="gitter-huelle">
+        <div class="gitter" id="gitter" role="grid" aria-label="Kreuzworträtsel"></div>
+      </div>
+
+      <!-- Für die Bildschirmtastatur auf dem Handy -->
+      <input type="text" id="tastaturfang" autocomplete="off" autocorrect="off"
+             autocapitalize="characters" spellcheck="false" aria-hidden="true" tabindex="-1">
+
+      <!-- Auf dem Handy steht hier der aktive Hinweis -->
+      <div class="aktiv-leiste" id="aktiv-leiste">
+        <p class="aktiv-nummer" id="aktiv-nummer">—</p>
+        <p class="aktiv-text" id="aktiv-text">Tipp auf ein Feld, um zu beginnen.</p>
+      </div>
+
+      <div class="werkzeuge">
+        <button type="button" id="hinweis-knopf">Hinweis schärfen</button>
+        <button type="button" id="pruefen-knopf">Prüfen</button>
+      </div>
+    </div>
+
+    <!-- Hinweisliste -->
+    <div class="hinweis-spalte">
+      <section>
+        <h2>Waagerecht</h2>
+        <ol class="hinweisliste" id="liste-waagerecht"></ol>
+      </section>
+      <section>
+        <h2>Senkrecht</h2>
+        <ol class="hinweisliste" id="liste-senkrecht"></ol>
+      </section>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============ Ergebnis ============ -->
+<div class="vorhang" id="ende" hidden>
+  <div class="vorhang-inhalt">
+    <p class="ende-zeile" id="ende-zeile">Rätsel gelöst</p>
+    <p class="punktzahl" id="ende-punkte">0</p>
+    <p class="ende-notiz" id="ende-notiz"></p>
+
+    <ul class="fehlerliste" id="fehlerliste"></ul>
+
+    <button type="button" class="haupt-knopf" id="nochmal">Neues Rätsel</button>
+  </div>
+</div>
+
+<script src="fragen.js"></script>
+<script src="daten.js"></script>
+<script src="gitter.js"></script>
+<script src="spiel.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

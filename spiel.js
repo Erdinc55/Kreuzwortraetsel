@@ -1,12 +1,5 @@
-/* ============================================================================
-   spiel.js — Spielstand, Punkte, Hinweisstufen, Bestenliste
-
-   Diese Datei verwaltet, was im Spiel gerade gilt. Sie fasst die Seite nicht
-   an; das Anzeigen übernimmt app.js.
-   ========================================================================== */
-
 const SPIEL_KONFIG = {
-  woerterAnfragen: 24,        // etwas mehr als gebraucht, manche finden keinen Platz
+  woerterAnfragen: 24,     
   punkteProBuchstabe: 8,
   kostenStufe2: 15,
   kostenStufe3: 30,
@@ -22,14 +15,9 @@ const GEBIET_NAMEN = {
 };
 const STUFEN_NAMEN = { leicht: "Leicht", mittel: "Mittel", schwer: "Schwer" };
 
-/* ---------------------------------------------------------------------------
-   Der Spielstand
-   ------------------------------------------------------------------------- */
-
 function spielAnlegen(gitter, gebiet, schwierigkeit) {
   const eintraege = gitter.eintraege.map((e, i) => ({ ...e, id: i, stufe: 1 }));
 
-  // Bei "leicht" ist die zweite Stufe von Anfang an sichtbar und gratis
   if (schwierigkeit === "leicht") {
     eintraege.forEach(e => { e.stufe = 2; });
   }
@@ -39,19 +27,15 @@ function spielAnlegen(gitter, gebiet, schwierigkeit) {
     eintraege,
     gebiet,
     schwierigkeit,
-    eingaben: new Map(),      // "z,s" -> Buchstabe
-    falschMarkiert: new Set(),// "z,s"
-    geloest: new Set(),       // ids der als richtig bestätigten Wörter
+    eingaben: new Map(),     
+    falschMarkiert: new Set(),
+    geloest: new Set(), 
     abzug: 0,
     hinweiseVerbraucht: 0,
     pruefungen: 0,
     beendet: false
   };
 }
-
-/* ---------------------------------------------------------------------------
-   Hinweis schärfen
-   ------------------------------------------------------------------------- */
 
 function hinweisSchaerfen(spiel, eintragId) {
   const eintrag = spiel.eintraege[eintragId];
@@ -63,12 +47,6 @@ function hinweisSchaerfen(spiel, eintragId) {
   return true;
 }
 
-/* ---------------------------------------------------------------------------
-   Prüfen
-
-   Markiert falsche Buchstaben und bestätigt vollständig richtige Wörter.
-   Kostet Punkte, damit es nicht zum Durchprobieren einlädt.
-   ------------------------------------------------------------------------- */
 
 function pruefen(spiel) {
   spiel.pruefungen++;
@@ -106,9 +84,6 @@ function wortVollstaendig(spiel, eintrag) {
   return wortFelder(eintrag).every(feld => !!spiel.eingaben.get(feld));
 }
 
-/* ---------------------------------------------------------------------------
-   Fortschritt und Abschluss
-   ------------------------------------------------------------------------- */
 
 function alleFelder(gitter) {
   return [...gitter.loesung.keys()];
@@ -145,9 +120,6 @@ function auswerten(spiel) {
   };
 }
 
-/* ---------------------------------------------------------------------------
-   Bestenliste
-   ------------------------------------------------------------------------- */
 
 function bestenlisteLaden() {
   try {
@@ -177,13 +149,13 @@ function bestenlisteEintragen(ergebnis, spiel) {
 
   try {
     localStorage.setItem(BESTENLISTE_SCHLUESSEL, JSON.stringify(gekuerzt));
-  } catch { /* privates Fenster — Spiel läuft trotzdem */ }
+  } catch { }
 
   return gekuerzt.indexOf(eintrag);
 }
 
 function bestenlisteLeeren() {
-  try { localStorage.removeItem(BESTENLISTE_SCHLUESSEL); } catch { /* egal */ }
+  try { localStorage.removeItem(BESTENLISTE_SCHLUESSEL); } catch {  }
 }
 
 if (typeof module !== "undefined" && module.exports) {

@@ -55,20 +55,6 @@ function vorratAufbereiten(rohEintraege) {
   return fertig;
 }
 
-/* ============================================================================
-   Bekanntheit
-
-   Wikidata sagt nicht, wie bekannt etwas ist. Aber jeder Eintrag weiß, in
-   wie vielen Wikipedia-Sprachversionen es einen Artikel dazu gibt. Genau das
-   ist ein guter Anhaltspunkt: Über den Mount Everest schreiben fast alle
-   Sprachen, über einen Nebenfluss der Weser kaum eine.
-
-   Daraus werden die drei Stufen:
-     1 sehr bekannt   ab 120 Sprachversionen
-     2 mittel         ab 45
-     3 eher entlegen  darunter
-   ========================================================================== */
-
 function bekanntheitAus(sprachversionen) {
   const n = Number(sprachversionen) || 0;
   if (n >= 120) return 1;
@@ -76,12 +62,6 @@ function bekanntheitAus(sprachversionen) {
   return 3;
 }
 
-/* ============================================================================
-   Hilfsfunktionen für die Hinweistexte
-   ========================================================================== */
-
-// Wikidata gibt ohne deutsche Bezeichnung die Kennnummer zurück, etwa "Q7251".
-// Solche Werte sind für Hinweise unbrauchbar.
 function brauchbar(text) {
   return typeof text === "string" && text.length > 0 && !/^Q\d+$/.test(text);
 }
@@ -105,19 +85,12 @@ function zahlSchreiben(wert, stellen = 0) {
   return n.toLocaleString("de-DE", { maximumFractionDigits: stellen });
 }
 
-/* Aus einer Jahreszahl wird das Jahrhundert. Das ist für die erste
-   Hinweisstufe wertvoll: „Ein Philosoph aus dem 4. Jahrhundert v. Chr."
-   grenzt ein, ohne zu verraten — und unterscheidet sich von anderen
-   Einträgen derselben Sorte. */
 function jahrhundertAus(jahr) {
   if (jahr === null || !Number.isFinite(jahr)) return null;
   const n = Math.ceil(Math.abs(jahr) / 100);
   return jahr < 0 ? `${n}. Jahrhundert v. Chr.` : `${n}. Jahrhundert`;
 }
 
-/* Die Ordnungszahl in Zehnerschritte einteilen. Ein Element allein über
-   „Ein chemisches Element" zu beschreiben, führt bei mehreren Elementen im
-   selben Rätsel zu wortgleichen Hinweisen. */
 function ordnungsBereich(zahl) {
   const n = Number(zahl);
   if (!Number.isFinite(n)) return null;
@@ -125,31 +98,9 @@ function ordnungsBereich(zahl) {
   return `${von} bis ${von + 9}`;
 }
 
-/* ============================================================================
-   Die Abfragen
-
-   Jede besteht aus einem SPARQL-Text und einer Funktion, die aus einer
-   Ergebniszeile einen Eintrag mit drei Hinweisstufen baut. Die Stufen gehen
-   von vage nach fast verraten — genau dafür sind die strukturierten
-   Eigenschaften gut: Sie liegen schon in Schichten vor.
-   ========================================================================== */
-
 const ABFRAGEN = [
 
-  /* Zwei Regeln halten diese Abfragen schnell:
-
-     Kein ORDER BY. Eine Sortierung zwingt den Server, erst ALLE Treffer zu
-     ermitteln und zu ordnen, bevor er den ersten herausgibt. Ohne Sortierung
-     darf er aufhören, sobald das LIMIT erreicht ist. Wir brauchen keine
-     Rangfolge, nur einen Vorrat — die Auswahl fürs einzelne Rätsel erfolgt
-     ohnehin später im Browser.
-
-     Was für einen Hinweis gebraucht wird, ist Pflicht statt OPTIONAL. Ein
-     Fluss ohne bekannte Mündung wird später sowieso aussortiert; ihn gar
-     nicht erst zu laden, verkleinert die Treffermenge von Anfang an. */
-
-  /* ---------------- Geografie: Flüsse ---------------- */
-  {
+{
     name: "Flüsse",
     gebiet: "geografie",
     sparql: `
@@ -175,8 +126,6 @@ LIMIT 120`,
     })
   },
 
-  /* ---------------- Geografie: Hauptstädte ----------------
-     Die kleinste Abfrage von allen: Es gibt nur rund 200 Staaten. */
   {
     name: "Hauptstädte",
     gebiet: "geografie",
@@ -202,10 +151,9 @@ LIMIT 220`,
     })
   },
 
-  /* ---------------- Geografie: Berge ---------------- */
   {
     name: "Berge",
-    aktiv: false,   // vorerst abgeschaltet, siehe Kommentar oben
+    aktiv: false,
     gebiet: "geografie",
     sparql: `
 SELECT ?itemLabel ?hoehe ?ketteLabel ?landLabel ?anzahl WHERE {
@@ -231,8 +179,6 @@ LIMIT 120`,
     })
   },
 
-  /* ---------------- Natur: chemische Elemente ----------------
-     118 Datensätze. Hier ist eine Sortierung unbedenklich. */
   {
     name: "Elemente",
     gebiet: "natur",
@@ -260,12 +206,9 @@ LIMIT 120`,
     })
   },
 
-  /* ---------------- Natur: Himmelskörper ----------------
-     Anker ist P397, der Körper, den etwas umkreist. Das haben nur
-     Planeten, Monde und Kleinkörper — eine von vornherein kleine Menge. */
   {
     name: "Himmelskörper",
-    aktiv: false,   // vorerst abgeschaltet, siehe Kommentar oben
+    aktiv: false,
     gebiet: "natur",
     sparql: `
 SELECT ?itemLabel ?elternLabel ?entdeckt ?anzahl WHERE {
@@ -291,11 +234,6 @@ LIMIT 120`,
     }
   },
 
-  /* ---------------- Geschichte: Personen ----------------
-     Die alte Fassung suchte über ALLE Menschen in Wikidata, mehrere
-     Millionen Datensätze — der Server brach ab. Jetzt ist der Anker der
-     Beruf: Monarchen, Philosophen, Feldherren, Astronomen und
-     Mathematiker sind zusammen ein Bruchteil davon. */
   {
     name: "Historische Personen",
     gebiet: "geschichte",
@@ -329,10 +267,9 @@ LIMIT 150`,
     }
   },
 
-  /* ---------------- Kultur: Gemälde ---------------- */
   {
     name: "Gemälde",
-    aktiv: false,   // vorerst abgeschaltet, siehe Kommentar oben
+    aktiv: false,
     gebiet: "kultur",
     sparql: `
 SELECT ?itemLabel ?schoepferLabel ?entstanden ?anzahl WHERE {
@@ -359,9 +296,6 @@ LIMIT 120`,
     }
   },
 
-  /* ---------------- Kultur: Kunstschaffende ----------------
-     Das Hauptwerk ist Pflicht, weil die dritte Hinweisstufe darauf
-     aufbaut. Das macht die Abfrage nebenbei deutlich schneller. */
   {
     name: "Kunstschaffende",
     gebiet: "kultur",
@@ -395,9 +329,6 @@ LIMIT 140`,
 
 ];
 
-/* ============================================================================
-   Eine Abfrage ausführen
-   ========================================================================== */
 
 async function abfrageAusfuehren(abfrage, signal) {
   const url = DATEN_KONFIG.endpunkt + "?format=json&query=" +
@@ -417,8 +348,6 @@ async function abfrageAusfuehren(abfrage, signal) {
   const daten = await antwort.json();
   const zeilen = daten.results?.bindings || [];
 
-  // SPARQL liefert jede Spalte als Objekt mit einem value-Feld. Hier wird
-  // daraus ein flaches Objekt, damit die bauen-Funktion einfach bleibt.
   return zeilen.map(zeile => {
     const flach = {};
     for (const [feld, inhalt] of Object.entries(zeile)) flach[feld] = inhalt.value;
@@ -426,9 +355,6 @@ async function abfrageAusfuehren(abfrage, signal) {
   });
 }
 
-/* Ein 502 oder 429 heißt meist nur, dass der Dienst gerade viel zu tun hat.
-   Nach kurzem Warten klappt es oft beim zweiten Mal. Bei allen anderen
-   Fehlern hat ein zweiter Versuch keinen Sinn. */
 async function abfrageMitZweitemVersuch(abfrage, signal) {
   try {
     return await abfrageAusfuehren(abfrage, signal);
@@ -443,12 +369,6 @@ async function abfrageMitZweitemVersuch(abfrage, signal) {
   }
 }
 
-/* ---------------------------------------------------------------------------
-   Aus Ergebniszeilen werden Einträge
-
-   Unvollständige Datensätze werden aussortiert: Wenn eine Hinweisstufe leer
-   bliebe, wäre der Eintrag als Rätselfrage wertlos.
-   ------------------------------------------------------------------------- */
 
 function zeilenUmwandeln(abfrage, zeilen) {
   const eintraege = [];
@@ -456,7 +376,7 @@ function zeilenUmwandeln(abfrage, zeilen) {
 
   for (const zeile of zeilen) {
     if (!brauchbar(zeile.itemLabel)) continue;
-    if (gesehen.has(zeile.itemLabel)) continue;   // OPTIONAL kann doppeln
+    if (gesehen.has(zeile.itemLabel)) continue;
 
     const eintrag = abfrage.bauen(zeile);
     if (!eintrag.hinweise.every(h => brauchbar(h))) continue;
@@ -467,10 +387,6 @@ function zeilenUmwandeln(abfrage, zeilen) {
 
   return eintraege;
 }
-
-/* ============================================================================
-   Vorrat beschaffen
-   ========================================================================== */
 
 function gespeichertenVorratLesen() {
   try {
@@ -497,8 +413,6 @@ function vorratSpeichern(eintraege) {
       eintraege
     }));
   } catch {
-    // Kein Speicherplatz oder privates Fenster. Das Spiel läuft trotzdem,
-    // der Vorrat wird beim nächsten Besuch eben neu geholt.
   }
 }
 
@@ -506,21 +420,12 @@ async function wikidataVorratHolen(melden) {
   const alle = [];
   let erfolge = 0;
 
-  /* Nur die als aktiv markierten Abfragen laufen. Acht Abfragen hintereinander
-     sprengen das Zeitbudget des Dienstes; fünf reichen, um alle vier Gebiete
-     abzudecken. Die abgeschalteten bleiben im Code stehen — wer mehr Vorrat
-     will, setzt aktiv wieder auf true und verlängert die Pause. */
   const laufen = ABFRAGEN.filter(a => a.aktiv !== false);
 
   for (let i = 0; i < laufen.length; i++) {
     const abfrage = laufen[i];
     if (melden) melden(abfrage.name, i + 1, laufen.length);
 
-    /* Jede Abfrage bekommt ihr EIGENES Abbruchsignal mit eigenem Wecker.
-       Ein gemeinsames Signal für alle wäre ein Fehler: Eine einzige lahme
-       Abfrage würde dann auch alle anderen abbrechen — auch die, die längst
-       erfolgreich waren. So scheitert höchstens eine, und die übrigen
-       Ergebnisse bleiben erhalten. */
     const abbruch = new AbortController();
     const wecker = setTimeout(() => abbruch.abort(), DATEN_KONFIG.zeitlimitMs);
 
@@ -547,22 +452,10 @@ async function wikidataVorratHolen(melden) {
   return alle;
 }
 
-/* ---------------------------------------------------------------------------
-   Die Schnittstelle, die der Rest des Programms benutzt
-   ------------------------------------------------------------------------- */
 
 let vorratImSpeicher = null;
-let laufenderAbruf = null;   // teilt sich alle gleichzeitigen Anfragen
+let laufenderAbruf = null;
 
-/* Die eingebaute Sammlung wird IMMER beigemischt, nicht nur im Notfall.
-   Grund: Wenn einzelne Abfragen scheitern, fehlt sonst ein ganzes Gebiet.
-   Kommen etwa nur die Abfragen zur Geografie durch, gäbe es unter „Natur"
-   kein einziges Rätsel. Die 60 eingebauten Fragen decken alle vier Gebiete
-   ab und füllen solche Lücken.
-
-   Die Reihenfolge ist wichtig: Wikidata zuerst, die eingebauten danach.
-   vorratAufbereiten wirft doppelte Antworten weg und behält die erste —
-   so gewinnen die frisch geholten Einträge. */
 function zusammenfuehren(wikidataEintraege) {
   return vorratAufbereiten([...wikidataEintraege, ...FRAGEN]);
 }
@@ -576,12 +469,6 @@ function gebieteZaehlen(vorrat) {
 async function vorratHolen(melden) {
   if (vorratImSpeicher) return vorratImSpeicher;
 
-  /* Läuft bereits ein Abruf, geben wir dieselbe Zusage zurück, statt einen
-     zweiten zu starten. Ohne diese Sperre konnte die Seite zwei Durchgänge
-     gleichzeitig starten — einen beim Öffnen, einen durch „Fragen neu
-     laden". Doppelt so viele Abfragen bedeuten hier aber nicht doppelt so
-     schnell, sondern das Gegenteil: Das Zeitbudget des Dienstes ist dann
-     sofort erschöpft und ALLE Abfragen laufen ins Leere. */
   if (laufenderAbruf) return laufenderAbruf;
 
   laufenderAbruf = vorratBeschaffen(melden);
@@ -593,7 +480,6 @@ async function vorratHolen(melden) {
 }
 
 async function vorratBeschaffen(melden) {
-  // 1. Gespeicherter Vorrat
   const gespeichert = gespeichertenVorratLesen();
   if (gespeichert) {
     vorratImSpeicher = zusammenfuehren(gespeichert);
@@ -601,7 +487,6 @@ async function vorratBeschaffen(melden) {
     return vorratImSpeicher;
   }
 
-  // 2. Wikidata
   try {
     const roh = await wikidataVorratHolen(melden);
     const fertig = zusammenfuehren(roh);
@@ -616,25 +501,17 @@ async function vorratBeschaffen(melden) {
   } catch (fehler) {
     console.warn("Wikidata nicht erreichbar:", fehler);
   }
-
-  // 3. Nur die eingebaute Sammlung
   vorratImSpeicher = vorratAufbereiten(FRAGEN);
   vorratImSpeicher.ausNotfall = true;
   return vorratImSpeicher;
 }
 
 function vorratVerwerfen() {
-  // Während ein Abruf läuft, darf nichts verworfen werden — sonst startet
-  // ein zweiter Durchgang parallel zum ersten.
   if (laufenderAbruf) return false;
   vorratImSpeicher = null;
   try { localStorage.removeItem(VORRAT_SCHLUESSEL); } catch { /* egal */ }
   return true;
 }
-
-/* ============================================================================
-   Fragen für ein Rätsel auswählen
-   ========================================================================== */
 
 function fragenWaehlen(vorrat, gebiet, schwierigkeit, anzahl) {
   const grundmenge = gebiet === "gemischt"
@@ -648,8 +525,6 @@ function fragenWaehlen(vorrat, gebiet, schwierigkeit, anzahl) {
   } else if (schwierigkeit === "schwer") {
     auswahl = grundmenge.filter(f => f.bekanntheit >= 2 || f.wort.length >= 7);
   }
-
-  // Bleiben zu wenige übrig, die Einschränkung lockern
   if (auswahl.length < anzahl) auswahl = grundmenge;
 
   auswahl = auswahl.slice();
@@ -658,14 +533,6 @@ function fragenWaehlen(vorrat, gebiet, schwierigkeit, anzahl) {
     [auswahl[i], auswahl[j]] = [auswahl[j], auswahl[i]];
   }
 
-  /* Abwechslung erzwingen.
-
-     Ohne diese Begrenzung konnte ein Rätsel sechsmal „Ein chemisches
-     Element" enthalten — wortgleiche Hinweise, zwischen denen nichts zu
-     unterscheiden war. Deshalb dürfen höchstens zwei Wörter denselben
-     ersten Hinweis tragen. Die Begrenzung greift über den Hinweistext
-     selbst, nicht über die Herkunft: So wirkt sie auch dann, wenn zwei
-     Einträge aus ganz verschiedenen Quellen zufällig gleich anfangen. */
   const HOECHSTENS_GLEICH = 2;
   const zaehler = new Map();
   const genommen = [];
@@ -683,9 +550,6 @@ function fragenWaehlen(vorrat, gebiet, schwierigkeit, anzahl) {
       zurueckgestellt.push(frage);
     }
   }
-
-  // Reicht es so nicht für ein volles Rätsel, wird aufgefüllt. Ein etwas
-  // eintönigeres Rätsel ist immer noch besser als ein zu kleines.
   while (genommen.length < anzahl && zurueckgestellt.length > 0) {
     genommen.push(zurueckgestellt.shift());
   }

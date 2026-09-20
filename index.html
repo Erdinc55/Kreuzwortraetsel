@@ -8,7 +8,6 @@
 </head>
 <body>
 
-<!-- ============ Startbildschirm ============ -->
 <div class="vorhang" id="start">
   <div class="vorhang-inhalt">
     <h1>Lesesaal</h1>
@@ -57,7 +56,6 @@
   </div>
 </div>
 
-<!-- ============ Spiel ============ -->
 <main class="spiel" id="spiel" hidden>
 
   <header class="leiste">
@@ -74,17 +72,14 @@
 
   <div class="buehne">
 
-    <!-- Gitter -->
     <div class="gitter-spalte">
       <div class="gitter-huelle">
         <div class="gitter" id="gitter" role="grid" aria-label="Kreuzworträtsel"></div>
       </div>
 
-      <!-- Für die Bildschirmtastatur auf dem Handy -->
       <input type="text" id="tastaturfang" autocomplete="off" autocorrect="off"
              autocapitalize="characters" spellcheck="false" aria-hidden="true" tabindex="-1">
 
-      <!-- Auf dem Handy steht hier der aktive Hinweis -->
       <div class="aktiv-leiste" id="aktiv-leiste">
         <p class="aktiv-nummer" id="aktiv-nummer">—</p>
         <p class="aktiv-text" id="aktiv-text">Tipp auf ein Feld, um zu beginnen.</p>
@@ -96,7 +91,6 @@
       </div>
     </div>
 
-    <!-- Hinweisliste -->
     <div class="hinweis-spalte">
       <section>
         <h2>Waagerecht</h2>
@@ -111,7 +105,6 @@
   </div>
 </main>
 
-<!-- ============ Ergebnis ============ -->
 <div class="vorhang" id="ende" hidden>
   <div class="vorhang-inhalt">
     <p class="ende-zeile" id="ende-zeile">Rätsel gelöst</p>

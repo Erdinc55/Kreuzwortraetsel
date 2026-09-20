@@ -1,46 +1,15 @@
-/* ============================================================================
-   daten.js — Fragen beschaffen und rätseltauglich machen
-
-   Drei Stufen, in dieser Reihenfolge:
-
-     1. Liegt ein gespeicherter Vorrat im Browser und ist er nicht zu alt,
-        wird er benutzt. Kein Netzzugriff.
-     2. Sonst wird bei Wikidata ein Vorrat geholt und gespeichert.
-     3. Schlägt auch das fehl, greift die fest eingebaute Sammlung aus
-        fragen.js.
-
-   Warum nicht bei jedem Rätsel frisch anfragen? Der Abfragedienst von
-   Wikidata ist bewusst knapp bemessen: Er strebt nur 95 Prozent
-   Verfügbarkeit an, bricht Abfragen nach 60 Sekunden ab und begrenzt die
-   Rechenzeit je Nutzer. Eine Seite, die bei jedem Klick dort anfragt, wäre
-   also regelmäßig kaputt — und das ausgerechnet dann, wenn jemand sie zum
-   ersten Mal ansieht. Mit einem einmal geholten Vorrat von mehreren hundert
-   Einträgen lassen sich beliebig viele Rätsel bauen, ganz ohne Netz.
-   ========================================================================== */
-
 const DATEN_KONFIG = {
   minLaenge: 3,
   maxLaenge: 14,
   endpunkt: "https://query.wikidata.org/sparql",
-  zeitlimitMs: 30000,       // gilt pro Abfrage, nicht für alle zusammen
+  zeitlimitMs: 55000,
   haltbarkeitTage: 7,
-  /* Der Dienst gewährt pro Nutzer nur 60 Sekunden Rechenzeit je Minute.
-     Bei zu kurzen Pausen ist das Budget nach zwei Abfragen aufgebraucht,
-     und alle folgenden warten sich zu Tode. Drei Sekunden Pause kosten
-     beim einmaligen Laden wenig und lassen dem Dienst Luft. */
   pauseZwischenAbfragen: 5000,
   wartenVorZweitemVersuch: 2000
 };
 
 const VORRAT_SCHLUESSEL = "lesesaal-vorrat";
 
-/* ============================================================================
-   Antworten aufbereiten
-   ========================================================================== */
-
-/* Reihenfolge ist hier wichtig. Die Umlaute müssen ZUERST ersetzt werden.
-   Würde man vorher die allgemeine Zeichenzerlegung anwenden, zerfiele Ä in
-   A plus Strichlein — übrig bliebe A statt des gewünschten AE. */
 function antwortNormalisieren(text) {
   let s = text;
 

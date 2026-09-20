@@ -1,12 +1,3 @@
-/* ============================================================================
-   app.js — Anzeige und Bedienung
-
-   Hier wird das Gitter gezeichnet, auf Klicks und Tasten reagiert und der
-   Spielstand sichtbar gemacht.
-   ========================================================================== */
-
-/* ---------- Elemente ---------- */
-
 const elStart      = document.getElementById("start");
 const elSpiel      = document.getElementById("spiel");
 const elEnde       = document.getElementById("ende");
@@ -25,19 +16,13 @@ const elStufenNotiz= document.getElementById("stufen-notiz");
 const elHinweisKnopf = document.getElementById("hinweis-knopf");
 const elPruefenKnopf = document.getElementById("pruefen-knopf");
 
-/* ---------- Zustand der Anzeige ---------- */
-
 let spiel = null;
 let gewaehltesGebiet = "gemischt";
 let gewaehlteStufe = "mittel";
 
-let aktiverEintrag = null;   // Objekt aus spiel.eintraege
-let cursor = null;           // { zeile, spalte }
-let zellen = new Map();      // "z,s" -> { el, eintraege: [id] }
-
-/* ============================================================================
-   Startbildschirm
-   ========================================================================== */
+let aktiverEintrag = null;
+let cursor = null;
+let zellen = new Map();
 
 document.querySelectorAll("[data-gebiet]").forEach(knopf => {
   knopf.addEventListener("click", () => {
@@ -76,10 +61,6 @@ document.getElementById("aufgeben").addEventListener("click", () => {
   beenden();
 });
 
-/* ============================================================================
-   Ein Rätsel aufbauen
-   ========================================================================== */
-
 const elLade = document.getElementById("ladezustand");
 const elQuelle = document.getElementById("quellenhinweis");
 const elStartKnopf = document.getElementById("starten");
@@ -87,7 +68,6 @@ const elStartKnopf = document.getElementById("starten");
 const elErneuern = document.getElementById("vorrat-erneuern");
 
 elErneuern.addEventListener("click", async () => {
-  // vorratVerwerfen sagt nein, wenn gerade schon ein Abruf läuft
   if (!vorratVerwerfen()) {
     elLade.hidden = false;
     elLade.textContent = "Es läuft bereits ein Ladevorgang. Einen Moment bitte.";
@@ -97,7 +77,6 @@ elErneuern.addEventListener("click", async () => {
   await vorratVorbereiten();
 });
 
-// Holt den Vorrat und hält dabei den Ladezustand aktuell.
 async function vorratVorbereiten() {
   elStartKnopf.disabled = true;
   elErneuern.disabled = true;
@@ -154,10 +133,6 @@ async function spielStarten() {
   fortschrittZeigen();
 }
 
-/* ---------------------------------------------------------------------------
-   Gitter zeichnen
-   ------------------------------------------------------------------------- */
-
 function gitterZeichnen() {
   elGitter.innerHTML = "";
   zellen.clear();
@@ -166,7 +141,6 @@ function gitterZeichnen() {
   elGitter.style.setProperty("--spalten", g.spalten);
   elGitter.style.setProperty("--zeilen", g.zeilen);
 
-  // Welche Wörter laufen durch welches Feld?
   const zuordnung = new Map();
   for (const eintrag of spiel.eintraege) {
     for (const feld of wortFelder(eintrag)) {
@@ -175,7 +149,6 @@ function gitterZeichnen() {
     }
   }
 
-  // Nummern an den Wortanfängen
   const nummern = new Map();
   for (const eintrag of spiel.eintraege) {
     const k = eintrag.zeile + "," + eintrag.spalte;
@@ -224,7 +197,6 @@ function gitterZeichnen() {
   zellgroesseSetzen();
 }
 
-// Die Schriftgröße im Gitter richtet sich nach der tatsächlichen Feldgröße.
 function zellgroesseSetzen() {
   if (!spiel) return;
   const breite = elGitter.clientWidth;
@@ -234,10 +206,6 @@ function zellgroesseSetzen() {
 }
 
 window.addEventListener("resize", zellgroesseSetzen);
-
-/* ---------------------------------------------------------------------------
-   Auswahl und Cursor
-   ------------------------------------------------------------------------- */
 
 function ersteZelleWaehlen() {
   const ersterWaagerecht = spiel.eintraege.find(e => e.waagerecht) || spiel.eintraege[0];
@@ -254,11 +222,9 @@ function zelleAnklicken(zeile, spalte) {
   const moegliche = info.eintraege.map(id => spiel.eintraege[id]);
 
   if (cursor && cursor.zeile === zeile && cursor.spalte === spalte && moegliche.length > 1) {
-    // Erneuter Klick auf dasselbe Feld wechselt die Richtung
     const andere = moegliche.find(e => e !== aktiverEintrag);
     if (andere) aktiverEintrag = andere;
   } else {
-    // Wenn möglich die bisherige Richtung beibehalten
     const gleicheRichtung = moegliche.find(e =>
       aktiverEintrag && e.waagerecht === aktiverEintrag.waagerecht);
     aktiverEintrag = gleicheRichtung || moegliche[0];
@@ -270,7 +236,6 @@ function zelleAnklicken(zeile, spalte) {
 }
 
 function tastaturHolen() {
-  // Auf dem Handy öffnet das die Bildschirmtastatur
   elFang.focus({ preventScroll: true });
 }
 
@@ -312,7 +277,6 @@ function freiBewegen(dz, ds) {
     const info = zellen.get(z + "," + s);
     if (info) {
       cursor = { zeile: z, spalte: s };
-      // Richtung passend zur Bewegung wählen, wenn möglich
       const wunsch = dz === 0;
       const passend = info.eintraege.map(id => spiel.eintraege[id])
                                     .find(e => e.waagerecht === wunsch);
@@ -324,15 +288,6 @@ function freiBewegen(dz, ds) {
     }
   }
 }
-
-/* ---------------------------------------------------------------------------
-   Tastatur
-
-   Zwei Wege, weil sich Rechner und Handy unterscheiden. Am Rechner liefert
-   keydown den Buchstaben direkt. Auf dem Handy melden viele Bildschirm-
-   tastaturen dort nur "Unidentified" — dort greift stattdessen das
-   input-Ereignis des versteckten Eingabefelds.
-   ------------------------------------------------------------------------- */
 
 elFang.addEventListener("keydown", e => {
   if (!spiel || spiel.beendet) return;
@@ -364,7 +319,6 @@ elFang.addEventListener("keydown", e => {
   if (e.key === "ArrowDown")  { e.preventDefault(); freiBewegen( 1, 0); anzeigeAuffrischen(); return; }
 
   if (e.key === " ") {
-    // Leertaste wechselt die Richtung, wie in gedruckten Rätseln üblich
     e.preventDefault();
     const info = zellen.get(cursor.zeile + "," + cursor.spalte);
     if (info && info.eintraege.length > 1) {
@@ -391,7 +345,6 @@ elFang.addEventListener("input", () => {
 });
 
 function buchstabeSetzen(zeichen) {
-  // Ein getipptes Ä wird zu AE — im Gitter steht also A, dann E.
   const umgewandelt = antwortNormalisieren(zeichen);
   if (!umgewandelt) return;
 
@@ -406,10 +359,6 @@ function buchstabeSetzen(zeichen) {
 
   if (gitterVoll(spiel)) beenden();
 }
-
-/* ---------------------------------------------------------------------------
-   Anzeige auffrischen
-   ------------------------------------------------------------------------- */
 
 function anzeigeAuffrischen() {
   const aktiveFelder = new Set(aktiverEintrag ? wortFelder(aktiverEintrag) : []);
@@ -429,7 +378,6 @@ function anzeigeAuffrischen() {
     el.classList.toggle("geloest", geloest);
   }
 
-  // Aktiver Hinweis
   if (aktiverEintrag) {
     elAktivNr.textContent = aktiverEintrag.nummer +
       (aktiverEintrag.waagerecht ? " waagerecht" : " senkrecht");
@@ -444,7 +392,6 @@ function anzeigeAuffrischen() {
   hinweiseAuffrischen();
   fortschrittZeigen();
 
-  // Aktives Feld sichtbar halten, wichtig bei offener Bildschirmtastatur
   const aktiveZelle = cursorFeld && zellen.get(cursorFeld);
   if (aktiveZelle) aktiveZelle.el.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
@@ -454,10 +401,6 @@ function fortschrittZeigen() {
   const gefuellt = felder.filter(f => spiel.eingaben.get(f)).length;
   elFortschritt.textContent = `${gefuellt} von ${felder.length} Feldern`;
 }
-
-/* ---------------------------------------------------------------------------
-   Hinweislisten
-   ------------------------------------------------------------------------- */
 
 function hinweiseZeichnen() {
   elListeW.innerHTML = "";
@@ -498,16 +441,11 @@ function hinweiseAuffrischen() {
     li.classList.toggle("aktiv", eintrag === aktiverEintrag);
     li.classList.toggle("fertig", spiel.geloest.has(eintrag.id));
 
-    // Punkte statt Sterne: gefüllte Punkte zeigen die erreichte Stufe
     const stufen = li.querySelector(".hinweis-stufen");
     stufen.textContent = "•".repeat(eintrag.stufe) + "◦".repeat(3 - eintrag.stufe);
     stufen.title = `Hinweisstufe ${eintrag.stufe} von 3`;
   });
 }
-
-/* ---------------------------------------------------------------------------
-   Werkzeuge
-   ------------------------------------------------------------------------- */
 
 elHinweisKnopf.addEventListener("click", () => {
   if (!aktiverEintrag) return;
@@ -522,10 +460,6 @@ elPruefenKnopf.addEventListener("click", () => {
 });
 
 elPruefenKnopf.textContent = "Prüfen";
-
-/* ---------------------------------------------------------------------------
-   Abschluss
-   ------------------------------------------------------------------------- */
 
 function beenden() {
   spiel.beendet = true;
@@ -561,10 +495,6 @@ function beenden() {
   elEnde.hidden = false;
 }
 
-/* ---------------------------------------------------------------------------
-   Bestenliste anzeigen
-   ------------------------------------------------------------------------- */
-
 function bestenlisteZeichnen() {
   const liste = bestenlisteLaden();
   const kasten = document.getElementById("bestenliste-start");
@@ -587,12 +517,6 @@ function bestenlisteZeichnen() {
   });
 }
 
-/* ---------------------------------------------------------------------------
-   Start
-   ------------------------------------------------------------------------- */
-
 bestenlisteZeichnen();
 
-// Den Vorrat gleich beim Öffnen holen, nicht erst beim Klick auf Start.
-// Wer sich den Startbildschirm noch ansieht, wartet dadurch nicht.
 vorratVorbereiten();

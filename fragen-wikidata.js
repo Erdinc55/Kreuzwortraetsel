@@ -1,12 +1,3 @@
-/* ============================================================================
-   fragen-wikidata.js — 987 Fragen aus Wikidata
-
-   NICHT VON HAND BEARBEITEN. Diese Datei wird von werkzeug/bauen.js erzeugt.
-   Wie man sie neu erzeugt, steht in werkzeug/LIESMICH.md.
-
-   Daten: Wikidata (CC0), abgefragt am 2026-10-05.
-   ========================================================================== */
-
 const WIKIDATA_FRAGEN = [
   {"antwort":"Lanthan","gebiet":"natur","bekanntheit":2,"hinweise":["Ein chemisches Element, Ordnungszahl 51 bis 60","Ordnungszahl genau 57","Chemisches Symbol La"]},
   {"antwort":"Promethium","gebiet":"natur","bekanntheit":3,"hinweise":["Ein chemisches Element, Ordnungszahl 61 bis 70","Ordnungszahl genau 61","Chemisches Symbol Pm"]},

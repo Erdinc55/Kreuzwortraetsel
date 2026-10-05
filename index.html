@@ -40,7 +40,6 @@
 
     <button type="button" class="haupt-knopf" id="starten">Rätsel beginnen</button>
 
-    <p class="ladezustand" id="ladezustand" hidden></p>
     <p class="quellenhinweis" id="quellenhinweis" hidden></p>
 
     <section class="bestenliste" id="bestenliste-start" hidden>
@@ -50,9 +49,9 @@
     </section>
 
     <p class="fussnote">
-      Die Fragen entstehen aus Wikidata (CC0). Sie werden einmal geladen und
-      im Browser behalten, damit die Seite auch ohne Verbindung spielbar bleibt.
-      <button type="button" class="text-knopf" id="vorrat-erneuern">Fragen neu laden</button>
+      Die meisten Fragen stammen aus Wikidata (CC0). Sie wurden einmal
+      abgefragt und liegen der Seite als Datei bei — kein Warten, kein
+      fremder Dienst beim Spielen.
     </p>
   </div>
 </div>
@@ -129,6 +128,7 @@
 </div>
 
 <script src="fragen.js"></script>
+<script src="fragen-wikidata.js"></script>
 <script src="daten.js"></script>
 <script src="gitter.js"></script>
 <script src="spiel.js"></script>

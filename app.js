@@ -36,7 +36,7 @@ let gewaehlteStufe = "mittel";
 let aktiverEintrag = null;   // Objekt aus spiel.eintraege
 let cursor = null;           // { zeile, spalte }
 let zellen = new Map();      // "z,s" -> { el, eintraege: [id] }
-let zeigtLoesung = false;    // Issue #5: Gitter zeigt die Auflösung statt der Eingaben
+let zeigtLoesung = false;    // Issue #3: Gitter zeigt die Auflösung statt der Eingaben
 
 /* ============================================================================
    Startbildschirm
@@ -83,54 +83,21 @@ document.getElementById("aufgeben").addEventListener("click", () => {
    Ein Rätsel aufbauen
    ========================================================================== */
 
-const elLade = document.getElementById("ladezustand");
 const elQuelle = document.getElementById("quellenhinweis");
 const elStartKnopf = document.getElementById("starten");
 
-const elErneuern = document.getElementById("vorrat-erneuern");
-
-elErneuern.addEventListener("click", async () => {
-  // vorratVerwerfen sagt nein, wenn gerade schon ein Abruf läuft
-  if (!vorratVerwerfen()) {
-    elLade.hidden = false;
-    elLade.textContent = "Es läuft bereits ein Ladevorgang. Einen Moment bitte.";
-    return;
-  }
-  elQuelle.hidden = true;
-  await vorratVorbereiten();
-});
-
-// Holt den Vorrat und hält dabei den Ladezustand aktuell.
+/* Die Fragen liegen als Dateien bei und sind sofort da — es gibt nichts
+   mehr zu laden und keinen Notfall mehr, über den man informieren müsste.
+   Angezeigt wird nur noch, wie viele Fragen zur Auswahl stehen. */
 async function vorratVorbereiten() {
-  elStartKnopf.disabled = true;
-  elErneuern.disabled = true;
-  elLade.hidden = false;
-  elLade.textContent = "Fragen werden geladen. Das dauert nur beim ersten Mal.";
-
-  const vorrat = await vorratHolen((name, nummer, gesamt) => {
-    elLade.textContent = `Fragen werden geladen (${nummer} von ${gesamt}): ${name}. ` +
-                         `Das dauert nur beim ersten Mal.`;
-  });
-
-  elLade.hidden = true;
-  elStartKnopf.disabled = false;
-  elErneuern.disabled = false;
-
-  if (vorrat.ausNotfall) {
-    elQuelle.hidden = false;
-    elQuelle.textContent =
-      "Wikidata war gerade nicht erreichbar. Gespielt wird mit der eingebauten " +
-      "Fragensammlung — etwas kleiner, aber vollständig spielbar.";
-  } else {
-    elQuelle.hidden = false;
-    elQuelle.textContent = `${vorrat.length} Fragen bereit.`;
-  }
-
+  const vorrat = await vorratHolen();
+  elQuelle.hidden = false;
+  elQuelle.textContent = `${vorrat.length.toLocaleString("de-DE")} Fragen im Vorrat.`;
   return vorrat;
 }
 
 async function spielStarten() {
-  // Issue #5: Lösungsmodus beim neuen Rätsel zurücksetzen
+  // Issue #3: Lösungsmodus beim neuen Rätsel zurücksetzen
   zeigtLoesung = false;
   elHinweisKnopf.disabled = false;
   elPruefenKnopf.disabled = false;
@@ -221,7 +188,7 @@ function gitterZeichnen() {
       buchstabe.className = "zellbuchstabe";
       zelle.appendChild(buchstabe);
 
-      // Issue #5: zeigt nach dem Auflösen den eigenen falschen Versuch
+      // Issue #3: zeigt nach dem Auflösen den eigenen falschen Versuch
       const versuch = document.createElement("span");
       versuch.className = "zellversuch";
       zelle.appendChild(versuch);
@@ -436,7 +403,7 @@ function anzeigeAuffrischen() {
     const richtig = spiel.gitter.loesung.get(feld) || "";
 
     if (zeigtLoesung) {
-      /* Issue #5 — Auflösung im Gitter.
+      /* Issue #3 — Auflösung im Gitter.
          Jedes Feld zeigt den richtigen Buchstaben. Wo etwas anderes stand,
          erscheint der eigene Versuch klein in der Ecke: So sieht man auf
          einen Blick, WO man danebenlag und WAS man stattdessen dachte. */
@@ -560,7 +527,7 @@ elPruefenKnopf.addEventListener("click", () => {
 elPruefenKnopf.textContent = "Prüfen";
 
 /* ---------------------------------------------------------------------------
-   Issue #5 — zwischen Ergebnis und aufgelöstem Gitter wechseln
+   Issue #3 — zwischen Ergebnis und aufgelöstem Gitter wechseln
    ------------------------------------------------------------------------- */
 
 function loesungAnsehen() {

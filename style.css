@@ -479,14 +479,7 @@ h1 {
   * { transition: none !important; animation: none !important; }
 }
 
-/* ============ Ladezustand und Quellenangabe ============ */
-
-.ladezustand {
-  margin: 14px 0 0;
-  font-size: 15px;
-  font-style: italic;
-  color: var(--gedaempft);
-}
+/* ============ Quellenangabe ============ */
 
 .quellenhinweis {
   margin: 12px 0 0;
@@ -510,7 +503,7 @@ h1 {
 .haupt-knopf:disabled { opacity: 0.45; cursor: default; }
 
 /* ============================================================
-   Issue #5 — Auflösung im Gitter
+   Issue #3 — Auflösung im Gitter
    ============================================================ */
 
 /* Der eigene falsche Versuch, klein in der unteren Ecke */

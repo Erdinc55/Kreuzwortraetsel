@@ -1,5 +1,21 @@
+/* ============================================================================
+   fragen.js — die fest eingebaute Fragensammlung
+
+   Sie hat zwei Aufgaben. Jetzt ist sie die einzige Quelle, damit das Spiel
+   gebaut und geprüft werden kann. Später wird sie zur Notfallsammlung: Sie
+   greift, wenn Wikidata nicht erreichbar ist und noch kein Vorrat im Browser
+   liegt. Die Seite muss in jedem Fall spielbar sein.
+
+   Aufbau eines Eintrags:
+     antwort      die richtige Schreibweise, so wird sie beim Auflösen gezeigt
+     gebiet       geografie | natur | geschichte | kultur
+     bekanntheit  1 sehr bekannt, 2 mittel, 3 eher entlegen
+     hinweise     drei Stufen, von vage nach fast verraten
+   ========================================================================== */
+
 const FRAGEN = [
 
+  /* ---------------- Geografie ---------------- */
   { antwort: "Donau", gebiet: "geografie", bekanntheit: 1, hinweise: [
     "Ein Fluss in Europa",
     "2.857 km lang, fließt durch zehn Länder",
@@ -75,6 +91,7 @@ const FRAGEN = [
     "Größte Stadt der arabischen Welt, liegt am Nil",
     "Hauptstadt Ägyptens, nahe den Pyramiden von Gizeh" ]},
 
+  /* ---------------- Naturwissenschaft ---------------- */
   { antwort: "Sauerstoff", gebiet: "natur", bekanntheit: 1, hinweise: [
     "Ein chemisches Element, Ordnungszahl 1 bis 10",
     "Ordnungszahl 8, Symbol O",
@@ -150,6 +167,7 @@ const FRAGEN = [
     "Sorgt dafür, dass Pflanzen grün aussehen",
     "Fängt das Sonnenlicht für die Photosynthese ein" ]},
 
+  /* ---------------- Geschichte und Personen ---------------- */
   { antwort: "Napoleon", gebiet: "geschichte", bekanntheit: 1, hinweise: [
     "Ein Herrscher des 19. Jahrhunderts",
     "Krönte sich 1804 selbst zum Kaiser der Franzosen",
@@ -225,6 +243,7 @@ const FRAGEN = [
     "Stammte aus Venedig",
     "Berichtete über seine Reise nach China zum Hof Kublai Khans" ]},
 
+  /* ---------------- Kultur ---------------- */
   { antwort: "Mozart", gebiet: "kultur", bekanntheit: 1, hinweise: [
     "Ein Komponist aus dem 18. Jahrhundert",
     "Geboren 1756 in Salzburg, gestorben mit 35 Jahren",
@@ -302,6 +321,9 @@ const FRAGEN = [
 
 ,
 
+  /* ================= Erweiterung ================= */
+
+  /* ---------------- Geografie ---------------- */
   { antwort: "Amazonas", gebiet: "geografie", bekanntheit: 1, hinweise: [
     "Ein Fluss in Südamerika",
     "Rund 6.400 km lang, führt mehr Wasser als jeder andere Fluss",
@@ -402,6 +424,7 @@ const FRAGEN = [
     "Der kleinste Staat der Erde, weniger als ein Quadratkilometer",
     "Liegt vollständig innerhalb von Rom" ]},
 
+  /* ---------------- Naturwissenschaft ---------------- */
   { antwort: "Wasserstoff", gebiet: "natur", bekanntheit: 1, hinweise: [
     "Ein chemisches Element, Ordnungszahl 1 bis 10",
     "Ordnungszahl genau 1, das leichteste Element",
@@ -498,6 +521,7 @@ const FRAGEN = [
     "Entsteht durch Strömungen im flüssigen äußeren Erdkern",
     "Lenkt geladene Teilchen ab und lässt Polarlichter entstehen" ]},
 
+  /* ---------------- Geschichte und Personen ---------------- */
   { antwort: "Alexander", gebiet: "geschichte", bekanntheit: 1, hinweise: [
     "Ein Herrscher aus dem 4. Jahrhundert v. Chr.",
     "Schüler des Aristoteles, König von Makedonien",
@@ -590,6 +614,7 @@ const FRAGEN = [
     "Sein weitgehend unversehrtes Grab wurde 1922 gefunden" ]},
 
 
+  /* ---------------- Kultur ---------------- */
   { antwort: "Vivaldi", gebiet: "kultur", bekanntheit: 2, hinweise: [
     "Ein Komponist aus dem 18. Jahrhundert",
     "Wirkte in Venedig, war auch Priester",

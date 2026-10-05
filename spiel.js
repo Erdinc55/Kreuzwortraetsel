@@ -7,6 +7,8 @@
 
 const SPIEL_KONFIG = {
   woerterAnfragen: 24,        // etwas mehr als gebraucht, manche finden keinen Platz
+  woerterHandy: 16,           // Issue #4: schmales Gitter, sonst wird es endlos hoch
+  feldMindestens: 30,         // Issue #4: so groß soll ein Feld auf dem Handy mindestens sein (px)
   punkteProBuchstabe: 8,
   kostenStufe2: 15,
   kostenStufe3: 30,

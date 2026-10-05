@@ -149,7 +149,7 @@ function bewerten(kreuzungen, rahmen, wort, zeile, spalte, waagerecht) {
    Ein einzelner Aufbauversuch
    ------------------------------------------------------------------------- */
 
-function einVersuch(woerter, zufall) {
+function einVersuch(woerter, zufall, maxSpalten) {
   const belegt = new Map();       // "zeile,spalte" -> Buchstabe
   const gesetzt = [];             // { wort, zeile, spalte, waagerecht }
   const rahmen = { oben: 0, unten: 0, links: 0, rechts: 0 };
@@ -158,11 +158,14 @@ function einVersuch(woerter, zufall) {
   const sortiert = woerter.slice().sort((a, b) => b.wort.length - a.wort.length);
   const anker = sortiert[0];
 
+  // Passt das längste Wort nicht in die erlaubte Breite, steht es senkrecht
+  const ankerWaagerecht = anker.wort.length <= maxSpalten;
   for (let i = 0; i < anker.wort.length; i++) {
-    belegt.set(schluessel(0, i), anker.wort[i]);
+    belegt.set(ankerWaagerecht ? schluessel(0, i) : schluessel(i, 0), anker.wort[i]);
   }
-  gesetzt.push({ ...anker, zeile: 0, spalte: 0, waagerecht: true });
-  rahmen.rechts = anker.wort.length - 1;
+  gesetzt.push({ ...anker, zeile: 0, spalte: 0, waagerecht: ankerWaagerecht });
+  if (ankerWaagerecht) rahmen.rechts = anker.wort.length - 1;
+  else rahmen.unten = anker.wort.length - 1;
 
   // Die übrigen Wörter in gemischter Reihenfolge
   let offen = mischen(sortiert.slice(1), zufall);
@@ -192,6 +195,13 @@ function einVersuch(woerter, zufall) {
             const neuWaagerecht = !vorhanden.waagerecht;
             const startZeile = neuWaagerecht ? z : z - ni;
             const startSpalte = neuWaagerecht ? s - ni : s;
+
+            // Issue #4: Auf dem Handy darf das Gitter nicht breiter werden als
+            // der Bildschirm — sonst werden die Felder winzig. In die Höhe
+            // darf es wachsen, scrollen ist auf dem Handy ganz normal.
+            const endSpalte = startSpalte + (neuWaagerecht ? wort.length - 1 : 0);
+            const breite = Math.max(rahmen.rechts, endSpalte) - Math.min(rahmen.links, startSpalte) + 1;
+            if (breite > maxSpalten) continue;
 
             const kreuzungen = passt(belegt, wort, startZeile, startSpalte, neuWaagerecht);
             if (kreuzungen === null) continue;
@@ -290,7 +300,7 @@ function fertigstellen(versuch) {
    Die eigentliche Schnittstelle nach außen
    ------------------------------------------------------------------------- */
 
-function gitterBauen(woerter, aussaat = Date.now()) {
+function gitterBauen(woerter, aussaat = Date.now(), maxSpalten = Infinity) {
   if (!woerter || woerter.length < 3) {
     throw new Error("Mindestens drei Wörter nötig.");
   }
@@ -299,7 +309,7 @@ function gitterBauen(woerter, aussaat = Date.now()) {
 
   for (let v = 0; v < GITTER_KONFIG.versuche; v++) {
     const zufall = zufallsGenerator(aussaat + v * 7919);
-    const versuch = einVersuch(woerter, zufall);
+    const versuch = einVersuch(woerter, zufall, maxSpalten);
 
     const anzahl = versuch.gesetzt.length;
     const hoehe = versuch.rahmen.unten - versuch.rahmen.oben + 1;

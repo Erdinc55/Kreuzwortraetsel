@@ -468,6 +468,37 @@ h1 {
   }
 }
 
+/* ============ Issue #4 — Handy ============ */
+
+@media (max-width: 600px) {
+  .leiste {
+    padding: 10px 12px;
+    font-size: 14px;
+    gap: 10px;
+  }
+  .leiste-links, .leiste-rechts { gap: 9px; }
+  #fortschritt { white-space: nowrap; }
+  .nur-breit { display: none; }
+
+  /* Nummer und Buchstabe teilen sich ein kleines Feld — den Buchstaben ein
+     Stück nach rechts unten rücken, damit er nicht auf der Nummer sitzt */
+  .zellnummer + .zellbuchstabe { transform: translate(10%, 12%); }
+
+  .werkzeuge button { flex: 1; padding: 12px 10px; }
+}
+
+/* Über der Bildschirmtastatur (iPhone). Die Position setzt app.js. */
+.aktiv-leiste.ueber-tastatur {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  max-width: none;
+  margin: 0;
+  z-index: 30;
+  box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.45);
+}
+
 /* ============ Zugänglichkeit ============ */
 
 :focus-visible {

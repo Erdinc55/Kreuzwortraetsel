@@ -96,6 +96,18 @@ async function vorratVorbereiten() {
   return vorrat;
 }
 
+function gittermass() {
+  const schmal = window.matchMedia("(max-width: 600px)").matches;
+  if (!schmal) return { anzahl: SPIEL_KONFIG.woerterAnfragen, maxSpalten: Infinity };
+
+  // 24 px Rand links und rechts zusammen, wie in style.css
+  const platz = window.innerWidth - 24;
+  return {
+    anzahl: SPIEL_KONFIG.woerterHandy,
+    maxSpalten: Math.max(9, Math.floor(platz / SPIEL_KONFIG.feldMindestens))
+  };
+}
+
 async function spielStarten() {
   // Issue #3: Lösungsmodus beim neuen Rätsel zurücksetzen
   zeigtLoesung = false;
@@ -106,8 +118,11 @@ async function spielStarten() {
 
   const vorrat = await vorratVorbereiten();
 
-  const fragen = fragenWaehlen(vorrat, gewaehltesGebiet, gewaehlteStufe,
-                               SPIEL_KONFIG.woerterAnfragen);
+  // Issue #4: Auf schmalen Bildschirmen ein schmaleres Gitter mit weniger
+  // Wörtern bauen. Früher war das Gitter bis zu 23 Felder breit — auf dem
+  // Handy blieben dann nur rund 13 Pixel pro Feld, viel zu klein zum Tippen.
+  const { anzahl, maxSpalten } = gittermass();
+  const fragen = fragenWaehlen(vorrat, gewaehltesGebiet, gewaehlteStufe, anzahl);
 
   if (fragen.length < 3) {
     elQuelle.hidden = false;
@@ -115,7 +130,7 @@ async function spielStarten() {
     return;
   }
 
-  const gitter = gitterBauen(fragen);
+  const gitter = gitterBauen(fragen, Date.now(), maxSpalten);
   spiel = spielAnlegen(gitter, gewaehltesGebiet, gewaehlteStufe);
 
   elLeisteGeb.textContent = GEBIET_NAMEN[spiel.gebiet];
@@ -447,15 +462,74 @@ function anzeigeAuffrischen() {
   hinweiseAuffrischen();
   fortschrittZeigen();
 
-  // Aktives Feld sichtbar halten, wichtig bei offener Bildschirmtastatur
-  const aktiveZelle = cursorFeld && zellen.get(cursorFeld);
-  if (aktiveZelle) aktiveZelle.el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  aktivesFeldZeigen();
 }
+
+/* ---------------------------------------------------------------------------
+   Issue #4 — Bildschirmtastatur auf dem Handy
+
+   Auf dem iPhone schiebt sich die Tastatur ÜBER die Seite, statt sie kleiner
+   zu machen. Der aktive Hinweis unter dem Gitter verschwand dadurch hinter
+   der Tastatur, und man tippte, ohne die Frage zu sehen.
+
+   visualViewport beschreibt den Teil der Seite, der wirklich sichtbar ist.
+   Ist er deutlich kleiner als das Fenster, ist die Tastatur offen — dann
+   wird die Hinweisleiste direkt über die Tastatur gesetzt.
+   ------------------------------------------------------------------------- */
+
+const elAktivLeiste = document.getElementById("aktiv-leiste");
+
+function tastaturOffen() {
+  const vv = window.visualViewport;
+  return !!vv && document.activeElement === elFang
+      && window.innerHeight - vv.height > 120;
+}
+
+function hinweisUeberTastatur() {
+  const vv = window.visualViewport;
+  const offen = tastaturOffen();
+  elAktivLeiste.classList.toggle("ueber-tastatur", offen);
+  if (offen) {
+    elAktivLeiste.style.top = (vv.offsetTop + vv.height - elAktivLeiste.offsetHeight) + "px";
+    aktivesFeldZeigen();
+  } else {
+    elAktivLeiste.style.top = "";
+  }
+}
+
+// Das Feld, in das man gerade tippt, soll weder hinter der Tastatur noch
+// hinter der Hinweisleiste liegen.
+function aktivesFeldZeigen() {
+  if (!spiel || !cursor) return;
+  const info = zellen.get(cursor.zeile + "," + cursor.spalte);
+  if (!info) return;
+
+  if (!tastaturOffen()) {
+    info.el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return;
+  }
+
+  const vv = window.visualViewport;
+  const r = info.el.getBoundingClientRect();
+  const oben = vv.offsetTop + 10;
+  const unten = vv.offsetTop + vv.height - elAktivLeiste.offsetHeight - 10;
+
+  if (r.bottom > unten) window.scrollBy(0, r.bottom - unten);
+  else if (r.top < oben) window.scrollBy(0, r.top - oben);
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", hinweisUeberTastatur);
+  window.visualViewport.addEventListener("scroll", hinweisUeberTastatur);
+}
+elFang.addEventListener("focus", () => setTimeout(hinweisUeberTastatur, 300));
+elFang.addEventListener("blur", hinweisUeberTastatur);
 
 function fortschrittZeigen() {
   const felder = [...spiel.gitter.loesung.keys()];
   const gefuellt = felder.filter(f => spiel.eingaben.get(f)).length;
-  elFortschritt.textContent = `${gefuellt} von ${felder.length} Feldern`;
+  // Issue #4: Auf dem Handy entfällt "Feldern", sonst bricht die Kopfleiste um
+  elFortschritt.innerHTML = `${gefuellt} von ${felder.length}<span class="nur-breit"> Feldern</span>`;
 }
 
 /* ---------------------------------------------------------------------------

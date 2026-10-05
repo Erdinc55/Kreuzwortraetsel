@@ -1,26 +1,8 @@
-/* ============================================================================
-   werkzeug/bauen.js — erzeugt ../fragen-wikidata.js aus rohdaten.json
-
-   Aufruf (im Ordner werkzeug):   node bauen.js
-
-   Die Rohdaten stammen aus den Abfragen in abfragen.md. Dieses Skript läuft
-   nur auf dem eigenen Rechner, nie im Browser der Besucher. Es macht aus
-   jeder Zeile eine Rätselfrage mit drei Hinweisstufen.
-
-   Warum ein eigener Schritt statt Abfrage im Browser: Siehe Issue #1 und #2.
-   Der Abfragedienst von Wikidata ist für Live-Anfragen aus fremden Browsern
-   zu unzuverlässig. Einmal sauber abgefragt und als Datei mitgeliefert,
-   funktioniert das Rätsel immer und sofort.
-   ========================================================================== */
-
 const fs = require("fs");
 const path = require("path");
 
 const roh = JSON.parse(fs.readFileSync(path.join(__dirname, "rohdaten.json"), "utf8"));
 
-/* ---------------------------------------------------------------------------
-   Hilfsfunktionen
-   ------------------------------------------------------------------------- */
 
 function normalisieren(text) {
   return text
@@ -59,10 +41,6 @@ function ordnungsBereich(n) {
   return `${von} bis ${von + 9}`;
 }
 
-/* Bekanntheit relativ zur eigenen Gruppe: das bekannteste Drittel ist
-   Stufe 1, das mittlere Stufe 2, der Rest Stufe 3. Ein fester Schwellwert
-   für alle Gebiete passt nicht — fast jede Hauptstadt hat über hundert
-   Wikipedia-Artikel, kaum ein Nebenfluss. */
 function bekanntheitNachRang(eintraege) {
   const sortiert = eintraege.slice().sort((a, b) => b._artikel - a._artikel);
   sortiert.forEach((e, i) => {
@@ -72,7 +50,6 @@ function bekanntheitNachRang(eintraege) {
   return eintraege;
 }
 
-/* Staatsnamen, die in den Daten amtlich-umständlich oder historisch sind */
 const LAENDER = {
   "Königreich der Niederlande": "Niederlande",
   "Königreich Dänemark": "Dänemark",
@@ -83,9 +60,6 @@ const LAENDER = {
 };
 const land = l => LAENDER[l] || l;
 
-/* ---------------------------------------------------------------------------
-   Elemente
-   ------------------------------------------------------------------------- */
 
 const elemente = roh.elemente.map(([name, oz, symbol, artikel]) => ({
   antwort: name,
@@ -98,19 +72,12 @@ const elemente = roh.elemente.map(([name, oz, symbol, artikel]) => ({
   _artikel: artikel
 }));
 
-/* ---------------------------------------------------------------------------
-   Hauptstädte
-   ------------------------------------------------------------------------- */
-
-// Rawalpindi ist nicht die Hauptstadt Pakistans, Aden nur vorübergehend
-// die des Jemen — beides Datenfehler, die im Rätsel falsch wären.
 const KEINE_HAUPTSTADT = new Set(["Rawalpindi", "Aden"]);
 
 const hauptstaedte = roh.hauptstaedte
   .filter(([name]) => !KEINE_HAUPTSTADT.has(name))
   .map(([name, l, kontinent, ew, artikel]) => {
     const staat = land(l);
-    // Bei Stadtstaaten würde "Land: Singapur" die Antwort verraten
     const dritte = normalisieren(staat) === normalisieren(name)
       ? "Stadtstaat: Land und Hauptstadt tragen denselben Namen"
       : `Land: ${staat}`;
@@ -122,17 +89,11 @@ const hauptstaedte = roh.hauptstaedte
     };
   });
 
-/* ---------------------------------------------------------------------------
-   Flüsse
-   ------------------------------------------------------------------------- */
 
 const fluesse = roh.fluesse.map(([name, laenge, muendung, l, laender, artikel]) => ({
   antwort: name,
   gebiet: "geografie",
   hinweise: [
-    // Bei mehreren Ländern sagt die Zahl mehr als ein zufällig gezogenes Land.
-    // Sonst würde die Garonne zum "Fluss in Spanien" und der Nil zum
-    // "Fluss in Burundi" — formal richtig, als Hinweis aber irreführend.
     laender > 1 ? `Ein Fluss, der durch ${laender} Länder fließt` : `Ein Fluss in ${land(l)}`,
     `${zahl(laenge)} km lang`,
     `Mündung: ${muendung}`
@@ -140,13 +101,6 @@ const fluesse = roh.fluesse.map(([name, laenge, muendung, l, laender, artikel]) 
   _artikel: artikel
 }));
 
-/* ---------------------------------------------------------------------------
-   Personen und Kunstschaffende
-
-   Für beide gilt: Lange Namen wurden schon bei der Abfrage auf den Nachnamen
-   verkürzt, der Vorname liegt getrennt vor. Diese Regel liegt bei einigen
-   Namen daneben — sie werden hier von Hand richtiggestellt.
-   ------------------------------------------------------------------------- */
 
 const NAMEN = {
   "Vinci": ["Leonardo", null],
@@ -168,15 +122,9 @@ const NAMEN = {
   "Montesquieu": ["Montesquieu", null]
 };
 
-/* Nicht verwertbar: nicht kurz genug benennbar, oder der Beruf in den Daten
-   hat mit dem, wofür jemand bekannt ist, nichts zu tun. */
 const AUSLASSEN = new Set(["Clairvaux", "Hoff", "Harry Houdini", "Chomeini"]);
 
-/* Wikidata ordnet Menschen oft mehrere Berufe zu, und die Abfrage zieht einen
-   davon. Für die bekanntesten Fehlgriffe steht hier das Fachgebiet, für das
-   die Person tatsächlich bekannt ist. */
 const FACH = {
-  // Personen
   "Edison": "Erfindungen", "James Watt": "Technik", "Max Planck": "Physik",
   "Gregor Mendel": "Biologie", "Wallace": "Biologie", "Buffon": "Biologie",
   "Ernst Haeckel": "Biologie", "Huxley": "Biologie", "Konrad Lorenz": "Biologie",
@@ -206,7 +154,6 @@ const FACH = {
   "Heraklit": "Philosophie", "Anaximander": "Philosophie",
   "Ockham": "Philosophie", "Theophrastos": "Philosophie",
   "Ziolkowski": "Raumfahrt", "Braun": "Raumfahrt",
-  // Kunstschaffende
   "Lavoisier": "Chemie", "Ptolemäus": "Astronomie", "Humboldt": "Naturforschung",
   "Leibniz": "Philosophie", "Engels": "Politik", "Bismarck": "Politik",
   "Kasparow": "Schach", "Caesar": "Politik", "Mao Zedong": "Politik",
@@ -226,8 +173,6 @@ const FACH = {
   "Montaigne": "Philosophie"
 };
 
-/* Berufe als Fachgebiet — das ist geschlechtsneutral und für einen Hinweis
-   genauso aussagekräftig: "Physik, 19. Jahrhundert" statt "Physiker aus …". */
 const BERUF_ZU_FACH = {
   "Komponist": "Musik", "Maler": "Malerei", "Dichter": "Literatur",
   "Schriftsteller": "Literatur", "Monarch": "Herrschaft", "Philosoph": "Philosophie",
@@ -274,9 +219,6 @@ const kunst = roh.kunst.map(([n, v, beruf, geb, werk, artikel]) => {
   };
 }).filter(Boolean);
 
-/* ---------------------------------------------------------------------------
-   Zusammenführen, prüfen, schreiben
-   ------------------------------------------------------------------------- */
 
 const gruppen = { elemente, hauptstaedte, fluesse, personen, kunst };
 const alle = [];
@@ -288,7 +230,6 @@ for (const [gruppe, eintraege] of Object.entries(gruppen)) {
     const wort = normalisieren(e.antwort);
     if (wort.length < 3 || wort.length > 14) { aussortiert.push(`${gruppe}: ${e.antwort} (Länge ${wort.length})`); continue; }
     if (gesehen.has(wort)) { aussortiert.push(`${gruppe}: ${e.antwort} (doppelt)`); continue; }
-    // Die Antwort darf in keinem Hinweis stehen
     if (e.hinweise.some(h => normalisieren(h).includes(wort) && wort.length >= 4)) {
       aussortiert.push(`${gruppe}: ${e.antwort} (steht im Hinweis)`); continue;
     }
